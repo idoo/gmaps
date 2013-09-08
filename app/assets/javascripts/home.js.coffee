@@ -94,12 +94,10 @@ callbackGeocoder = (results, status) ->
 # Deletes all markers in the array by removing references to them
 deleteOverlays = ->
   if root.markersArray
-    for i of root.markersArray
-      root.markersArray[i].setMap null
+    marker.setMap(null) for marker in root.markersArray
     root.markersArray.length = 0
   if root.circlesArray
-    for i of root.circlesArray
-      root.circlesArray[i].setMap null
+    circle.setMap(null) for circle in root.circlesArray
     root.circlesArray.length = 0
   appendResult()
 
