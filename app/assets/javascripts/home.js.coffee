@@ -83,9 +83,11 @@ callbackGeocoder = (results, status) ->
   else
     console.log("error:" + status)
 
+# create result
 buildResults = (addressComponents) ->
   buildResultsArray(addressComponents).join('')
 
+# create result array
 buildResultsArray = (addressComponents) ->
   for result in addressComponents
     "<tr><td>#{result.types[0]}</td><td>#{result.long_name}</td></tr>"
@@ -94,10 +96,10 @@ buildResultsArray = (addressComponents) ->
 deleteOverlays = ->
   if root.markersArray
     marker.setMap(null) for marker in root.markersArray
-    root.markersArray.length = 0
+#    root.markersArray.length = 0
   if root.circlesArray
     circle.setMap(null) for circle in root.circlesArray
-    root.circlesArray.length = 0
+#    root.circlesArray.length = 0
   appendResult()
 
 # insert results in the box
