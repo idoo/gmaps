@@ -79,17 +79,16 @@ createMarker = (latlng, name, html) ->
 # callback geocode function  
 callbackGeocoder = (results, status) ->
   if status is gm.GeocoderStatus.OK
-    row = undefined
-    i = 0
-
-    while i < results[0].address_components.length
-      result = results[0].address_components[i]
-      row += "<tr><td>" + result.types[0] + "</td><td>" + result.long_name + "</td></tr>"
-      i++
-
-    appendResult(row)
+    appendResult(buildResults(results[0].address_components))
   else
     console.log("error:" + status)
+
+buildResults = (addressComponents) ->
+  buildResultsArray(addressComponents).join('')
+
+buildResultsArray = (addressComponents) ->
+  for result in addressComponents
+    "<tr><td>#{result.types[0]}</td><td>#{result.long_name}</td></tr>"
 
 # Deletes all markers in the array by removing references to them
 deleteOverlays = ->
