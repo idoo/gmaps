@@ -31,20 +31,19 @@ class Marker
     geocoder = new gm.Geocoder()
     geocoder.geocode request, @callbackGeocoder
 
-    # add circle overlay and bind to marker
     circle = new gm.Circle(
       map: root.map
       radius: 50
       fillColor: "#AA0000"
     )
 
-    # marker on center of the circle
     circle.bindTo "center", marker, "position"
     circlesArray.push(circle)
 
     @addListenerForSecondClick(marker)
+    @addListenerForMoveMarker(marker)
 
-    # add listener for move action
+  addListenerForMoveMarker: (marker) ->
     gm.event.addListener marker, "dragend", (mouseEvt) =>
       request =
         location: mouseEvt.latLng
