@@ -23,7 +23,6 @@ class Marker
       map: root.map
       draggable: true
     )
-
     root.markersArray.push marker
 
     request =
@@ -36,7 +35,6 @@ class Marker
       radius: 50
       fillColor: "#AA0000"
     )
-
     circle.bindTo "center", marker, "position"
     circlesArray.push(circle)
 
@@ -59,17 +57,18 @@ class Marker
 
   addListenerForRemoveMarkerAction: (div) ->
     gm.event.addDomListener div.find("a")[0], "click", (event) =>
-      event.preventDefault()
-      event.stopPropagation()
+      @preventVisitLink()
       @cleanup()
 
+  preventVisitLink: ->
+    event.preventDefault()
+    event.stopPropagation()
+
   cleanup: ->
-    if root.markersArray
+    if root.markersArray && root.circlesArray
       marker.setMap(null) for marker in root.markersArray
-    if root.circlesArray
       circle.setMap(null) for circle in root.circlesArray
     @appendResult()
-
 
   callbackGeocoder: (results, status) =>
     if status is gm.GeocoderStatus.OK
@@ -100,7 +99,6 @@ initialize = ->
 
 addListenerForRemoveMarker = ->
   gm.event.addListener root.map, "click", (event) ->
-    new Marker(event.latLng, "name",
-      DELETE_TEMPLATE)
+    new Marker(event.latLng)
 
 initialize()
