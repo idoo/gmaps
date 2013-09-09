@@ -7,103 +7,100 @@ gm = google.maps
 
 # global variable
 root = exports ? this
-root.infowindow = new gm.InfoWindow({width: 200 })
+root.infowindow = new gm.InfoWindow()
 root.markersArray = []
 root.circlesArray = []
 
-# initialize function for google maps
 initialize = ->
   mapOptions =
     center: new gm.LatLng(59.9401975, 30.0906896)
     zoom: 10
     mapTypeId: gm.MapTypeId.ROADMAP
 
-  root.map = new gm.Map($("#map_canvas")[0],
-    mapOptions)
+  root.map = new gm.Map($("#map_canvas")[0], mapOptions)
 
-  # add marker listener
-  gm.event.addListener root.map, "click", (event) ->
-    marker = createMarker(event.latLng, "name",
-      '<div><br /><a href="#">Delete</a></div>')
+  addListenerForRemoveMarker()
 
-# create the marker, geocode result and create circle
-createMarker = (latlng, name, html) ->
-  deleteOverlays()
+class Marker
+  constructor: (latlng) ->
+    @cleanup()
+    @create(latlng)
 
-  marker = new gm.Marker(
-    position: latlng
-    map: root.map
-    draggable: true
-  )
-  # add marker to array
-  root.markersArray.push marker
+  create: (latlng) ->
+    marker = new gm.Marker(
+      position: latlng
+      map: root.map
+      draggable: true
+    )
 
-  # request to geocode current result
-  request =
-    location: latlng
-  geocoder = new gm.Geocoder()
-  geocoder.geocode request, callbackGeocoder
+    root.markersArray.push marker
 
-  # add circle overlay and bind to marker
-  circle = new gm.Circle(
-    map: root.map
-    radius: 50
-    fillColor: "#AA0000"
-  )
-  # marker on center of the circle
-  circle.bindTo "center", marker, "position"
-  # add circle to array
-  circlesArray.push(circle);
-
-  # add listener for dubble click
-  gm.event.addListener marker, "click", ->
-    infowindow.open map, marker
-    div = $('<div><a href="#">Delete marker</a></div>')
-
-    # add listener for remove marker
-    gm.event.addDomListener div.find("a")[0], "click", (event) ->
-      event.preventDefault()
-      event.stopPropagation()
-      deleteOverlays()
-
-    infowindow.setContent div[0]
-
-  # add listener for move action
-  gm.event.addListener marker, "dragend", (mouseEvt) ->
     request =
-      location: mouseEvt.latLng
+      location: latlng
     geocoder = new gm.Geocoder()
     geocoder.geocode request, callbackGeocoder
 
+    # add circle overlay and bind to marker
+    circle = new gm.Circle(
+      map: root.map
+      radius: 50
+      fillColor: "#AA0000"
+    )
 
-# callback geocode function  
+    # marker on center of the circle
+    circle.bindTo "center", marker, "position"
+    circlesArray.push(circle);
+
+    # add listener for dubble click
+    gm.event.addListener marker, "click", =>
+      infowindow.open map, marker
+      div = $('<div><a href="#">Delete marker</a></div>')
+
+      # add listener for remove marker
+      gm.event.addDomListener div.find("a")[0], "click", (event) =>
+        event.preventDefault()
+        event.stopPropagation()
+        @cleanup()
+
+      infowindow.setContent div[0]
+
+    # add listener for move action
+    gm.event.addListener marker, "dragend", (mouseEvt) ->
+      request =
+        location: mouseEvt.latLng
+      geocoder = new gm.Geocoder()
+      geocoder.geocode request, callbackGeocoder
+
+  # Deletes all markers in the array by removing references to them
+  cleanup: ->
+    if root.markersArray
+      marker.setMap(null) for marker in root.markersArray
+    if root.circlesArray
+      circle.setMap(null) for circle in root.circlesArray
+    appendResult()
+
+
+addListenerForRemoveMarker = ->
+  gm.event.addListener root.map, "click", (event) ->
+    new Marker(event.latLng, "name",
+      DELETE_TEMPLATE)
+  DELETE_TEMPLATE = '<div><br /><a href="#">Delete</a></div>'
+
 callbackGeocoder = (results, status) ->
   if status is gm.GeocoderStatus.OK
     appendResult(buildResults(results[0].address_components))
   else
     console.log("error:" + status)
 
-# create result
 buildResults = (addressComponents) ->
   buildResultsArray(addressComponents).join('')
 
-# create result array
 buildResultsArray = (addressComponents) ->
   for result in addressComponents
     "<tr><td>#{result.types[0]}</td><td>#{result.long_name}</td></tr>"
 
-# Deletes all markers in the array by removing references to them
-deleteOverlays = ->
-  if root.markersArray
-    marker.setMap(null) for marker in root.markersArray
-#    root.markersArray.length = 0
-  if root.circlesArray
-    circle.setMap(null) for circle in root.circlesArray
-#    root.circlesArray.length = 0
-  appendResult()
-
-# insert results in the box
 appendResult = (result = null) ->
   $('.span3').empty().append(result)
+
 
 initialize()
